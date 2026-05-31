@@ -140,7 +140,7 @@ export function useCommitVote() {
       target: `${PACKAGE_ID}::${MODULE}::commit_vote`,
       arguments: [
         tx.object(bountyId),
-        tx.pure.bytes(commitHash),
+        tx.pure(commitHash),
   
       ],
     });
@@ -171,7 +171,7 @@ export function useRevealVote() {
         tx.object(bountyId),
         tx.pure.id(submissionId),
         tx.pure.u8(score),
-        tx.pure.bytes(nonce),
+        tx.pure(nonce),
       
       ],
     });
