@@ -2,24 +2,6 @@ import Link from "next/link";
 import { Bounty } from "@/hooks/useBounties";
 import { STATE_LABELS, TYPE_LABELS } from "@/lib/constants";
 
-const TYPE_BAR: Record<number, string> = {
-  0: "bg-coral",
-  1: "bg-teal",
-  2: "bg-yellow-500",
-};
-
-const STATE_BADGE: Record<number, string> = {
-  0: "bg-teal-light text-teal",
-  1: "bg-purple-100 text-purple-700",
-  2: "bg-gray-100 text-gray-500",
-};
-
-const SKILL_TAGS: Record<number, string[]> = {
-  0: ["Development", "Move", "Sui"],
-  1: ["Design", "Creative"],
-  2: ["Research", "Writing"],
-};
-
 function timeRemaining(ms: number): string {
   const diff = ms - Date.now();
   if (diff <= 0) return "Closed";
@@ -32,62 +14,95 @@ function shortAddr(addr: string) {
 }
 
 export default function BountyCard({ bounty }: { bounty: Bounty }) {
-  const tags = SKILL_TAGS[bounty.bountyType] ?? ["Web3"];
   const timeLeft = timeRemaining(bounty.submissionDeadlineMs);
-  const isUrgent = bounty.submissionDeadlineMs - Date.now() < 3 * 86_400_000 && bounty.submissionDeadlineMs > Date.now();
+
+  const isUrgent =
+    bounty.submissionDeadlineMs - Date.now() < 3 * 86_400_000 &&
+    bounty.submissionDeadlineMs > Date.now();
 
   return (
     <Link href={`/bounty/${bounty.id}`} className="no-underline">
-      <div className="bg-white border border-ocean-100 rounded-xl p-5 cursor-pointer transition-all hover:border-coral hover:-translate-y-px flex flex-col gap-3.5">
+      <div
+        className="
+          bg-white
+          border border-ocean-100
+          rounded-xl
+          p-5
+          transition
+          hover:border-koral/40
+          hover:-translate-y-[1px]
+          hover:shadow-sm
+          flex flex-col gap-4
+          font-syne
+          mb-4
+        "
+      >
+        {/* HEADER */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 min-w-0">
 
-        {/* Top */}
-        <div className="flex items-start gap-3">
-          <div className={`w-0.5 self-stretch rounded-sm ${TYPE_BAR[bounty.bountyType]} shrink-0`} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <div
-                className="w-6 h-6 rounded-full shrink-0"
-                style={{ background: `hsl(${parseInt(bounty.poster.slice(2, 4), 16) * 1.4}, 60%, 50%)` }}
-              />
-              <span className="text-[11px] text-ocean-600 font-mono">{shortAddr(bounty.poster)}</span>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${STATE_BADGE[bounty.state]}`}>
-                {STATE_LABELS[bounty.state]}
-              </span>
+            {/* subtle left indicator */}
+            <div className="w-1 h-full min-h-[44px] rounded-full bg-koral/80 shrink-0" />
+
+            <div className="min-w-0">
+              <h3 className="text-[15px] font-semibold text-ocean-900 leading-snug truncate">
+                {bounty.title}
+              </h3>
+
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[11px] text-ocean-500 font-mono">
+                  {shortAddr(bounty.poster)}
+                </span>
+
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-ocean-50 text-koral-600 font-medium">
+                  {TYPE_LABELS[bounty.bountyType]}
+                </span>
+
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-koral/10 text-koral font-semibold">
+                  {STATE_LABELS[bounty.state]}
+                </span>
+              </div>
             </div>
-            <h3 className="text-[15px] font-bold text-ocean-900 leading-snug truncate">{bounty.title}</h3>
           </div>
 
-          {/* Prize */}
+          {/* REWARD */}
           <div className="text-right shrink-0">
-            <p className="text-[10px] text-ocean-600 font-mono mb-0.5">reward</p>
-            <p className="text-[20px] font-bold text-ocean-900 font-mono leading-none">{bounty.prizePool.toLocaleString()}</p>
-            <p className="text-[10px] font-bold text-coral font-mono mt-0.5">SUI</p>
+            <p className="text-[10px] text-koral-500 font-mono">reward</p>
+            <p className="text-[18px] font-bold text-koral-900 font-mono leading-none">
+              {bounty.prizePool.toLocaleString()}
+            </p>
+            <p className="text-[10px] font-semibold text-koral mt-1">SUI</p>
           </div>
         </div>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5">
-          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${TYPE_BAR[bounty.bountyType]} bg-opacity-10 text-ocean-900`}>
-            {TYPE_LABELS[bounty.bountyType]}
-          </span>
-          {tags.map(tag => (
-            <span key={tag} className="text-[10px] px-2.5 py-1 rounded-full bg-ocean-50 text-ocean-600 font-medium">
-              {tag}
+        {/* META */}
+        <div className="flex items-center justify-between pt-3 border-t border-koral-100">
+          <div className="flex gap-4 text-[11px] text-koral-600">
+            <span>
+              <span className="text-koral-900 font-semibold">
+                {bounty.submissionCount}
+              </span>{" "}
+              submissions
             </span>
-          ))}
-        </div>
 
-        {/* Footer */}
-        <div className="flex justify-between items-center pt-3 border-t border-ocean-100">
-          <div className="flex gap-4">
-            <span className="text-[11px] text-ocean-600">
-              <strong className="text-ocean-900">{bounty.submissionCount}</strong> submissions
-            </span>
-            <span className="text-[11px] text-ocean-600">
-              <strong className="text-ocean-900">{bounty.judgeCount}</strong> judges
+            <span>
+              <span className="text-koral-900 font-semibold">
+                {bounty.judgeCount}
+              </span>{" "}
+              judges
             </span>
           </div>
-          <span className={`text-[11px] font-bold font-mono px-2.5 py-1 rounded-full ${isUrgent ? "bg-red-50 text-red-600" : "bg-ocean-100 text-ocean-600"}`}>
+
+          <span
+            className={`
+              text-[11px] font-semibold font-mono px-2.5 py-1 rounded-full
+              ${
+                isUrgent
+                  ? "bg-koral/10 text-koral"
+                  : "bg-ocean-50 text-ocean-600"
+              }
+            `}
+          >
             {timeLeft}
           </span>
         </div>

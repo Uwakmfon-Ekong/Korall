@@ -22,6 +22,18 @@ module.exports = {
           dark:    "#E8543C",
           light:   "#FFE8E8",
         },
+        koral: {
+          50: "#F5F8FF",
+          100: "#E8F0FF",
+          200: "#C9DBFF",
+          300: "#9DBDFF",
+          400: "#6F9BFF",
+          500: "#4F7CFF",
+          600: "#2F5DFF",
+          700: "#2447CC",
+          800: "#1B3599",
+          900: "#122466",
+        },
         teal: {
           DEFAULT: "#1D9E75",
           light:   "#e1f5ee",

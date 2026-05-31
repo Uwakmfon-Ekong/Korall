@@ -19,101 +19,89 @@ export interface Bounty {
   judgeCount: number;
 }
 
+const CACHE_KEY = "koral_bounties_cache";
+const CACHE_TTL = 60_000; // 1 minute
+
+function saveCache(bounties: Bounty[]) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data: bounties, ts: Date.now() }));
+  } catch { /* ignore */ }
+}
+
+function loadCache(): Bounty[] | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) return null;
+    return data;
+  } catch { return null; }
+}
+
+function parseFields(objectId: string, fields: Record<string, unknown>): Bounty {
+  let prizePool = 0;
+  if (typeof fields.prize_pool === "object" && fields.prize_pool !== null) {
+    const pp = fields.prize_pool as { fields?: { value?: string }; value?: string };
+    prizePool = mistToSui(BigInt(pp?.fields?.value ?? pp?.value ?? "0"));
+  } else if (typeof fields.prize_pool === "string") {
+    prizePool = mistToSui(BigInt(fields.prize_pool));
+  } else if (typeof fields.prize_pool === "number") {
+    prizePool = mistToSui(BigInt(fields.prize_pool));
+  }
+  return {
+    id: objectId,
+    poster: fields.poster as string,
+    title: fields.title as string,
+    walrusBlobId: fields.walrus_blob_id as string,
+    bountyType: Number(fields.bounty_type),
+    state: Number(fields.state),
+    prizePool,
+    submissionDeadlineMs: Number(fields.submission_deadline_ms),
+    judgingDeadlineMs: Number(fields.judging_deadline_ms),
+    posterWeightBps: Number(fields.poster_weight_bps),
+    submissionCount: Number(fields.submission_count),
+    judgeCount: Array.isArray(fields.judges) ? fields.judges.length : 0,
+  };
+}
+
 export function useBounties() {
   const client = useSuiClient();
 
   return useQuery({
     queryKey: ["bounties", PACKAGE_ID],
     queryFn: async (): Promise<Bounty[]> => {
-      // Step 1: get all BountyCreated events
       const events = await client.queryEvents({
-        query: {
-          MoveEventType: `${PACKAGE_ID}::${MODULE}::BountyCreated`,
-        },
+        query: { MoveEventType: `${PACKAGE_ID}::${MODULE}::BountyCreated` },
         limit: 50,
       });
 
       if (!events.data.length) return [];
 
-      // Step 2: extract bounty IDs from parsedJson
       const bountyIds = events.data.map(
-        (e) => (e.parsedJson as { bounty_id: string }).bounty_id,
+        (e) => (e.parsedJson as { bounty_id: string }).bounty_id
       );
 
-      console.log("Found bounty IDs:", bountyIds);
+      const objects = await client.multiGetObjects({
+        ids: bountyIds,
+        options: { showContent: true },
+      });
 
-      // Step 3: fetch each object individually to avoid batch issues
-      const results: Bounty[] = [];
+      const bounties = objects
+        .filter((o) => o.data?.content?.dataType === "moveObject")
+        .map((o) => {
+          const fields = (o.data!.content as {
+            dataType: "moveObject";
+            fields: Record<string, unknown>;
+          }).fields;
+          return parseFields(o.data!.objectId, fields);
+        });
 
-      for (const id of bountyIds) {
-        try {
-          const obj = await client.getObject({
-            id,
-            options: { showContent: true, showType: true },
-          });
-
-          console.log(
-            "Object response for",
-            id,
-            ":",
-            JSON.stringify(obj, null, 2),
-          );
-
-          if (obj.data?.content?.dataType !== "moveObject") {
-            console.warn("Not a moveObject:", id, obj.data?.content?.dataType);
-            continue;
-          }
-
-          const fields = (
-            obj.data.content as {
-              dataType: "moveObject";
-              fields: Record<string, unknown>;
-            }
-          ).fields;
-
-          console.log("Fields:", fields);
-
-          // prize_pool is nested in Sui — it's an object with "value" field
-          let prizePool = 0;
-          if (
-            typeof fields.prize_pool === "object" &&
-            fields.prize_pool !== null
-          ) {
-            const pp = fields.prize_pool as {
-              fields?: { value?: string };
-              value?: string;
-            };
-            prizePool = mistToSui(
-              BigInt(pp?.fields?.value ?? pp?.value ?? "0"),
-            );
-          } else if (typeof fields.prize_pool === "string") {
-            prizePool = mistToSui(BigInt(fields.prize_pool));
-          } else if (typeof fields.prize_pool === "number") {
-            prizePool = mistToSui(BigInt(fields.prize_pool));
-          }
-
-          results.push({
-            id: obj.data.objectId,
-            poster: fields.poster as string,
-            title: fields.title as string,
-            walrusBlobId: fields.walrus_blob_id as string,
-            bountyType: Number(fields.bounty_type),
-            state: Number(fields.state),
-            prizePool,
-            submissionDeadlineMs: Number(fields.submission_deadline_ms),
-            judgingDeadlineMs: Number(fields.judging_deadline_ms),
-            posterWeightBps: Number(fields.poster_weight_bps),
-            submissionCount: Number(fields.submission_count),
-            judgeCount: Array.isArray(fields.judges) ? fields.judges.length : 0,
-          });
-        } catch (err) {
-          console.error("Failed to fetch bounty object:", id, err);
-        }
-      }
-
-      return results;
+      saveCache(bounties);
+      return bounties;
     },
-    refetchInterval: 10_000,
+    initialData: () => loadCache() ?? undefined,
+    staleTime: 20_000,
+    refetchInterval: 30_000,
   });
 }
 
@@ -127,42 +115,14 @@ export function useBounty(bountyId: string) {
         id: bountyId,
         options: { showContent: true },
       });
-
       if (obj.data?.content?.dataType !== "moveObject") return null;
-
-      const fields = (
-        obj.data.content as {
-          dataType: "moveObject";
-          fields: Record<string, unknown>;
-        }
-      ).fields;
-
-      let prizePool = 0;
-      if (typeof fields.prize_pool === "object" && fields.prize_pool !== null) {
-        const pp = fields.prize_pool as {
-          fields?: { value?: string };
-          value?: string;
-        };
-        prizePool = mistToSui(BigInt(pp?.fields?.value ?? pp?.value ?? "0"));
-      } else if (typeof fields.prize_pool === "string") {
-        prizePool = mistToSui(BigInt(fields.prize_pool));
-      }
-
-      return {
-        id: obj.data.objectId,
-        poster: fields.poster as string,
-        title: fields.title as string,
-        walrusBlobId: fields.walrus_blob_id as string,
-        bountyType: Number(fields.bounty_type),
-        state: Number(fields.state),
-        prizePool,
-        submissionDeadlineMs: Number(fields.submission_deadline_ms),
-        judgingDeadlineMs: Number(fields.judging_deadline_ms),
-        posterWeightBps: Number(fields.poster_weight_bps),
-        submissionCount: Number(fields.submission_count),
-        judgeCount: Array.isArray(fields.judges) ? fields.judges.length : 0,
-      };
+      const fields = (obj.data.content as {
+        dataType: "moveObject";
+        fields: Record<string, unknown>;
+      }).fields;
+      return parseFields(obj.data.objectId, fields);
     },
     enabled: !!bountyId,
+    staleTime: 10_000,
   });
 }

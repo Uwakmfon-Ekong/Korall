@@ -10,8 +10,6 @@ const FEATURED = [
     xUrl: "https://x.com/SuiNetwork",
     url: "https://overflow.sui.io",
     logo: "🌊",
-    color: "border-blue-200 hover:border-blue-400",
-    tagColor: "bg-blue-100 text-blue-700",
     status: "Active",
   },
   {
@@ -23,8 +21,6 @@ const FEATURED = [
     xUrl: "https://x.com/lofitheYeti",
     url: "https://hackathon.lofitheyeti.com/",
     logo: "🐾",
-    color: "border-purple-200 hover:border-purple-400",
-    tagColor: "bg-purple-100 text-purple-700",
     status: "Quarterly",
   },
   {
@@ -36,8 +32,6 @@ const FEATURED = [
     xUrl: "https://x.com/SuiFoundation",
     url: "https://sui.io/programs-funding",
     logo: "🏛️",
-    color: "border-ocean-200 hover:border-ocean-400",
-    tagColor: "bg-ocean-100 text-ocean-600",
     status: "Ongoing",
   },
   {
@@ -49,8 +43,6 @@ const FEATURED = [
     xUrl: "https://x.com/WalrusProtocol",
     url: "https://docs.wal.app",
     logo: "🦭",
-    color: "border-teal-200 hover:border-teal-400",
-    tagColor: "bg-teal-100 text-teal-700",
     status: "Ongoing",
   },
   {
@@ -62,101 +54,116 @@ const FEATURED = [
     xUrl: "https://x.com/SuiNetwork",
     url: "https://ethglobal.com/events/hackmoney2026/prizes/sui",
     logo: "💰",
-    color: "border-green-200 hover:border-green-400",
-    tagColor: "bg-green-100 text-green-700",
     status: "Recent",
   },
 ];
 
-const STATUS_COLOR: Record<string, string> = {
-  Active: "bg-teal-light text-teal",
-  Quarterly: "bg-purple-100 text-purple-600",
-  Ongoing: "bg-ocean-100 text-ocean-600",
+const TAG_STYLE: Record<string, string> = {
+  Hackathon: "bg-koral-100 text-koral-700",
+  Grant: "bg-koral-50 text-koral-600",
+};
+
+const STATUS_STYLE: Record<string, string> = {
+  Active: "bg-green-50 text-green-700",
+  Quarterly: "bg-purple-50 text-purple-700",
+  Ongoing: "bg-koral-50 text-koral-600",
   Recent: "bg-gray-100 text-gray-500",
 };
 
 export default function FeaturedExternal() {
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8 border-t border-ocean-100">
+    <div className="bg-white border-t border-koral-100">
+      <div className="max-w-5xl mx-auto px-6 py-12">
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <p className="text-[10px] font-mono font-bold text-coral tracking-widest uppercase mb-1">Sui ecosystem</p>
-          <h2 className="font-sans font-bold text-[16px] text-ocean-900 tracking-tight">
-            Bounties & programs not yet on Koral
-          </h2>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <p className="text-[10px] font-mono font-bold text-koral-400 tracking-widest uppercase mb-1">
+              Sui ecosystem
+            </p>
+            <h2 className="font-syne font-bold text-[18px] text-koral-900 tracking-tight">
+              Bounties & programs not yet on Koral
+            </h2>
+          </div>
+          <span className="text-[11px] text-koral-300 font-mono hidden sm:block shrink-0 mt-1">
+            External ↗
+          </span>
         </div>
-        <span className="text-[11px] text-ocean-400 font-mono hidden sm:block shrink-0 mt-1">External ↗</span>
-      </div>
 
-      <p className="text-[12px] text-ocean-500 leading-relaxed mb-5">
-        Great Sui opportunities running outside Koral. We've linked each one directly.
-        Running a program and want transparent on-chain judging?{" "}
-        <a href="https://x.com/whakee_" target="_blank" rel="noopener noreferrer" className="text-coral no-underline hover:underline font-medium">
-          Talk to us →
-        </a>
-      </p>
-
-      {/* Cards */}
-      <div className="flex flex-col gap-3">
-        {FEATURED.map(f => (
+        <p className="text-[13px] text-koral-500 leading-relaxed mb-6 max-w-xl">
+          Great Sui opportunities running outside Koral. Running a program and want transparent on-chain judging?{" "}
           <a
-            key={f.project}
-            href={f.url}
+            href="https://x.com/whakee_"
             target="_blank"
             rel="noopener noreferrer"
-            className={`no-underline bg-white rounded-xl border-2 p-4 transition-all flex items-start gap-4 group ${f.color}`}
+            className="text-koral-600 no-underline hover:underline font-medium"
           >
-            {/* Logo */}
-            <div className="w-10 h-10 rounded-xl bg-ocean-50 flex items-center justify-center text-xl shrink-0">
-              {f.logo}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                <span className="font-sans font-bold text-[13px] text-ocean-900">{f.project}</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${f.tagColor}`}>{f.tag}</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_COLOR[f.status]}`}>{f.status}</span>
-              </div>
-              <p className="text-[11px] text-ocean-400 mb-1.5 font-medium">{f.org}</p>
-              <p className="text-[12px] text-ocean-600 leading-relaxed">{f.description}</p>
-
-              {/* X link */}
-              <a
-                href={f.xUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                className="inline-flex items-center gap-1 mt-2 text-[11px] text-coral no-underline hover:underline font-medium"
-              >
-                Follow on X ↗
-              </a>
-            </div>
-
-            {/* Prize */}
-            <div className="text-right shrink-0">
-              <p className="text-[10px] text-ocean-400 font-mono mb-0.5">prize</p>
-              <p className="text-[12px] font-bold text-ocean-900 font-mono">{f.prize}</p>
-              <span className="text-coral text-sm mt-2 block group-hover:translate-x-0.5 transition-transform">↗</span>
-            </div>
+            Talk to us →
           </a>
-        ))}
-      </div>
+        </p>
 
-      {/* CTA */}
-      <div className="mt-5 p-4 bg-ocean-900 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div>
-          <p className="font-sans font-bold text-white text-[13px]">Running a Sui bounty or hackathon?</p>
-          <p className="text-[11px] text-white/50 mt-0.5">Bring it on-chain. Funds locked in escrow, judging transparent, payouts automatic.</p>
+        {/* Cards grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          {FEATURED.map((f) => (
+            <a
+              key={f.project}
+              href={f.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="no-underline bg-koral-50 hover:bg-koral-100 border border-koral-100 hover:border-koral-300 rounded-xl p-4 transition-all flex items-start gap-3 group"
+            >
+              {/* Logo */}
+              <div className="w-9 h-9 rounded-lg bg-white border border-koral-100 flex items-center justify-center text-lg shrink-0">
+                {f.logo}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                  <span className="font-syne font-bold text-[13px] text-koral-900">{f.project}</span>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${TAG_STYLE[f.tag] ?? "bg-koral-100 text-koral-600"}`}>
+                    {f.tag}
+                  </span>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${STATUS_STYLE[f.status]}`}>
+                    {f.status}
+                  </span>
+                </div>
+                <p className="text-[11px] text-koral-400 font-medium mb-1">{f.org}</p>
+                <p className="text-[12px] text-koral-600 leading-relaxed line-clamp-2">{f.description}</p>
+                <div className="flex items-center justify-between mt-2">
+                  <a
+                    href={f.xUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-[11px] text-koral-500 no-underline hover:text-koral-700 font-medium"
+                  >
+                    Follow on X ↗
+                  </a>
+                  <span className="text-[11px] font-bold font-mono text-koral-700">{f.prize}</span>
+                </div>
+              </div>
+            </a>
+          ))}
         </div>
-        <a
-          href="/create"
-          className="text-[12px] font-bold bg-coral text-white px-4 py-2 rounded-lg no-underline hover:bg-coral-dark transition-colors shrink-0 whitespace-nowrap"
-        >
-          Post on Koral →
-        </a>
+
+        {/* CTA */}
+        <div className="bg-koral-700 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <p className="font-syne font-bold text-white text-[14px]">
+              Running a Sui bounty or hackathon?
+            </p>
+            <p className="text-[12px] text-white/60 mt-0.5">
+              Bring it on-chain. Funds locked in escrow, judging transparent, payouts automatic.
+            </p>
+          </div>
+          <a
+            href="/create"
+            className="text-[13px] font-bold bg-white text-koral-700 px-5 py-2.5 rounded-lg no-underline hover:bg-koral-50 transition-colors shrink-0 whitespace-nowrap font-syne"
+          >
+            Post on Koral →
+          </a>
+        </div>
       </div>
     </div>
   );

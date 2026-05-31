@@ -11,8 +11,7 @@ import {
   useApplyToJudge, useApproveJudge, useStartReview,
   useCommitVote, useRevealVote, useFinalizeFixedBounty,
 } from "@/hooks/useTransactions";
-import { useCurrentAccount } from "@mysten/dapp-kit";
-import { ConnectButton } from "@mysten/dapp-kit";
+import { useCurrentAccount, ConnectButton } from "@mysten/dapp-kit";
 import { STATE_LABELS, TYPE_LABELS, BOUNTY_STATE } from "@/lib/constants";
 import { loadNonce } from "@/lib/voting";
 
@@ -28,8 +27,8 @@ function timeRemaining(ms: number) {
 }
 
 const STATE_BADGE: Record<number, string> = {
-  0: "bg-teal-light text-teal",
-  1: "bg-purple-100 text-purple-700",
+  0: "bg-green-50 text-green-700",
+  1: "bg-purple-50 text-purple-700",
   2: "bg-gray-100 text-gray-500",
 };
 
@@ -56,7 +55,6 @@ export default function BountyDetailPage() {
   const [msg, setMsg] = useState("");
   const [msgType, setMsgType] = useState<"success" | "error">("success");
 
-  // Parse structured content from walrus blob
   let content = {
     description: "",
     deliverables: [] as string[],
@@ -74,16 +72,18 @@ export default function BountyDetailPage() {
   }
 
   if (isLoading) return (
-    <div className="min-h-screen bg-ocean-50"><Navbar />
-      <div className="text-center py-20 font-mono text-[12px] text-ocean-600">Loading bounty…</div>
+    <div className="min-h-screen bg-koral-50 font-syne">
+      <Navbar />
+      <div className="text-center py-20 font-mono text-[12px] text-koral-400">Loading bounty…</div>
     </div>
   );
 
   if (!bounty) return (
-    <div className="min-h-screen bg-ocean-50"><Navbar />
+    <div className="min-h-screen bg-koral-50 font-syne">
+      <Navbar />
       <div className="text-center py-20">
-        <p className="font-sans font-bold text-xl text-ocean-900">Bounty not found</p>
-        <a href="/" className="text-[13px] text-coral mt-3 inline-block no-underline">← Back to bounties</a>
+        <p className="font-syne font-bold text-xl text-koral-900">Bounty not found</p>
+        <a href="/" className="text-[13px] text-koral-600 mt-3 inline-block no-underline hover:underline">← Back to bounties</a>
       </div>
     </div>
   );
@@ -105,73 +105,55 @@ export default function BountyDetailPage() {
     } finally { setLoading(false); }
   }
 
-  // Determine submit button state
   const renderSubmitArea = () => {
-    if (!account) {
-      return (
-        <div className="flex flex-col gap-2 text-center">
-          <p className="text-[12px] text-white/40 mb-1">Connect your wallet to submit work or apply to judge.</p>
-          <ConnectButton />
-        </div>
-      );
-    }
-    if (isPoster) {
-      return <p className="text-[12px] text-white/40 text-center">You posted this bounty</p>;
-    }
-    if (!isOpen || deadlinePassed) {
-      return <p className="text-[12px] text-white/40 text-center">Submissions are closed</p>;
-    }
-    if (checkingSubmission) {
-      return <p className="text-[12px] text-white/40 text-center font-mono">Checking status…</p>;
-    }
-    if (hasSubmitted) {
-      return (
-        <div className="bg-teal-light rounded-xl px-4 py-3 text-center">
-          <p className="text-[13px] font-bold text-teal">✓ You've submitted</p>
-          <p className="text-[11px] text-teal/70 mt-0.5">Your work is recorded on-chain. Good luck!</p>
-        </div>
-      );
-    }
-    if (hasAppliedToJudge) {
-      return (
-        <div className="bg-ocean-100 rounded-xl px-4 py-3 text-center">
-          <p className="text-[13px] font-bold text-ocean-700">You applied to judge</p>
-          <p className="text-[11px] text-ocean-500 mt-0.5">You can't submit work to a bounty you're judging.</p>
-        </div>
-      );
-    }
+    if (!account) return (
+      <div className="flex flex-col gap-2 text-center">
+        <p className="text-[12px] text-white/50 mb-1">Connect your wallet to submit work.</p>
+        <ConnectButton />
+      </div>
+    );
+    if (isPoster) return <p className="text-[12px] text-white/40 text-center">You posted this bounty</p>;
+    if (!isOpen || deadlinePassed) return <p className="text-[12px] text-white/40 text-center">Submissions are closed</p>;
+    if (checkingSubmission) return <p className="text-[12px] text-white/40 text-center font-mono">Checking status…</p>;
+    if (hasSubmitted) return (
+      <div className="bg-green-50 rounded-xl px-4 py-3 text-center">
+        <p className="text-[13px] font-bold text-green-700">✓ You've submitted</p>
+        <p className="text-[11px] text-green-600 mt-0.5">Your work is recorded on-chain. Good luck!</p>
+      </div>
+    );
+    if (hasAppliedToJudge) return (
+      <div className="bg-koral-50 rounded-xl px-4 py-3 text-center">
+        <p className="text-[13px] font-bold text-koral-700">You applied to judge</p>
+        <p className="text-[11px] text-koral-500 mt-0.5">You can't submit to a bounty you're judging.</p>
+      </div>
+    );
     return (
       <button
         onClick={() => setShowSubmitModal(true)}
-        className="w-full py-3 bg-coral hover:bg-coral-dark text-white font-bold text-[13px] rounded-xl border-none cursor-pointer transition-colors font-sans"
+        className="w-full py-3 bg-koral-600 hover:bg-koral-500 text-white font-bold text-[13px] rounded-xl border-none cursor-pointer transition-colors font-syne"
       >
         Submit work →
       </button>
     );
   };
 
-  // Determine judge apply button state
   const renderJudgeApply = () => {
     if (!account || isPoster || !isOpen) return null;
-    if (hasSubmitted) {
-      return (
-        <p className="text-[11px] text-ocean-400 text-center py-1">
-          You can't judge a bounty you submitted to.
-        </p>
-      );
-    }
-    if (hasAppliedToJudge) {
-      return (
-        <div className="w-full py-2.5 bg-ocean-100 text-ocean-500 font-bold text-[13px] rounded-xl text-center">
-          ✓ Application sent
-        </div>
-      );
-    }
+    if (hasSubmitted) return (
+      <p className="text-[11px] text-koral-400 text-center py-1">
+        You can't judge a bounty you submitted to.
+      </p>
+    );
+    if (hasAppliedToJudge) return (
+      <div className="w-full py-2.5 bg-koral-50 text-koral-500 font-bold text-[13px] rounded-xl text-center border border-koral-100">
+        ✓ Application sent
+      </div>
+    );
     return (
       <button
         onClick={() => run(() => applyToJudge(id), "Application sent! The poster will review it.")}
         disabled={loading}
-        className="w-full py-2.5 bg-white text-ocean-900 font-bold text-[13px] rounded-xl border-2 border-ocean-100 hover:border-coral cursor-pointer transition-colors font-sans disabled:opacity-50"
+        className="w-full py-2.5 bg-white text-koral-900 font-bold text-[13px] rounded-xl border-2 border-koral-100 hover:border-koral-600 cursor-pointer transition-colors font-syne disabled:opacity-50"
       >
         Apply to judge
       </button>
@@ -179,33 +161,33 @@ export default function BountyDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-ocean-50">
+    <div className="min-h-screen bg-koral-50 font-syne">
       <Navbar />
 
       {/* Header */}
-      <div className="bg-ocean-900 px-6 pt-10 pb-8 border-b border-coral/15">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-[11px] text-white/40 font-mono mb-4">
-            <a href="/" className="text-white/40 no-underline hover:text-white transition-colors">Bounties</a>
+      <div className="bg-koral-700 px-6 pt-10 pb-8 border-b border-koral-600">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-[11px] text-koral-200/60 font-mono mb-4">
+            <a href="/" className="text-koral-200/60 no-underline hover:text-white transition-colors">Bounties</a>
             {" / "}
-            <span className="text-white/60">{bounty.title.slice(0, 50)}{bounty.title.length > 50 ? "…" : ""}</span>
+            <span className="text-koral-200">{bounty.title.slice(0, 50)}{bounty.title.length > 50 ? "…" : ""}</span>
           </p>
           <div className="flex flex-wrap gap-2 mb-3">
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${STATE_BADGE[bounty.state]}`}>
               {STATE_LABELS[bounty.state]}
             </span>
-            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-coral/20 text-coral uppercase tracking-wider">
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/10 text-koral-200 uppercase tracking-wider">
               {TYPE_LABELS[bounty.bountyType]}
             </span>
             {content.skills.map(s => (
               <span key={s} className="text-[10px] px-2.5 py-1 rounded-full bg-white/8 text-white/50">{s}</span>
             ))}
           </div>
-          <h1 className="font-sans font-bold text-2xl sm:text-3xl text-white leading-snug mb-4 tracking-tight">
+          <h1 className="font-syne font-bold text-2xl sm:text-3xl text-white leading-snug mb-4 tracking-tight">
             {bounty.title}
           </h1>
-          <div className="flex flex-wrap gap-4 text-[12px] text-white/50 font-mono">
-            <span>Posted by <span className="text-coral">{shortAddr(bounty.poster)}</span></span>
+          <div className="flex flex-wrap gap-4 text-[12px] text-koral-200/60 font-mono">
+            <span>Posted by <span className="text-koral-200">{shortAddr(bounty.poster)}</span></span>
             <span>{timeRemaining(bounty.submissionDeadlineMs)}</span>
             <span>{bounty.submissionCount} submissions</span>
           </div>
@@ -213,27 +195,27 @@ export default function BountyDetailPage() {
       </div>
 
       {/* Body */}
-      <div className="max-w-3xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+      <div className="max-w-4xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
 
         {/* Left */}
         <div className="flex flex-col gap-5">
           {content.description && (
             <Section title="About this bounty">
-              <p className="text-[13px] text-ocean-600 leading-relaxed">{content.description}</p>
+              <p className="text-[13px] text-koral-600 leading-relaxed">{content.description}</p>
             </Section>
           )}
           {content.deliverables.length > 0 && (
             <Section title="Deliverables">
               <ol className="pl-4 flex flex-col gap-2.5 m-0">
                 {content.deliverables.map((d, i) => (
-                  <li key={i} className="text-[13px] text-ocean-600 leading-relaxed">{d}</li>
+                  <li key={i} className="text-[13px] text-koral-600 leading-relaxed">{d}</li>
                 ))}
               </ol>
             </Section>
           )}
           {content.guidelines && (
             <Section title="Submission guidelines">
-              <p className="text-[13px] text-ocean-600 leading-relaxed">{content.guidelines}</p>
+              <p className="text-[13px] text-koral-600 leading-relaxed">{content.guidelines}</p>
             </Section>
           )}
           {content.links.length > 0 && (
@@ -241,34 +223,35 @@ export default function BountyDetailPage() {
               <div className="flex flex-col gap-2">
                 {content.links.map(link => (
                   <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-ocean-50 border border-ocean-100 no-underline hover:border-coral transition-colors">
-                    <span className="text-[12px] font-bold text-ocean-800">{link.label}</span>
-                    <span className="text-[12px] text-coral">↗</span>
+                    className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-koral-50 border border-koral-100 no-underline hover:border-koral-600 transition-colors">
+                    <span className="text-[12px] font-bold text-koral-800">{link.label}</span>
+                    <span className="text-[12px] text-koral-600">↗</span>
                   </a>
                 ))}
               </div>
             </Section>
           )}
+
           <Section title={`Judges · ${bounty.judgeCount + 1} on panel`}>
             <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-ocean-50 border border-ocean-100">
+              <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-koral-50 border border-koral-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-ocean-900 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-koral-700 flex items-center justify-center shrink-0">
                     <span className="text-[10px] text-white font-bold">P</span>
                   </div>
                   <div>
-                    <p className="text-[12px] font-bold text-ocean-900 font-mono">{shortAddr(bounty.poster)}</p>
-                    <p className="text-[10px] text-ocean-600">Poster · {Math.round(bounty.posterWeightBps / 100)}% weight</p>
+                    <p className="text-[12px] font-bold text-koral-900 font-mono">{shortAddr(bounty.poster)}</p>
+                    <p className="text-[10px] text-koral-500">Poster · {Math.round(bounty.posterWeightBps / 100)}% weight</p>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-ocean-900 text-white uppercase tracking-wider">Poster</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-koral-700 text-white uppercase tracking-wider">Poster</span>
               </div>
               {bounty.judgeCount === 0 && (
-                <p className="text-[12px] text-ocean-400 px-1 py-2">No community judges yet.</p>
+                <p className="text-[12px] text-koral-400 px-1 py-2">No community judges yet.</p>
               )}
             </div>
           </Section>
-          
+
           {(isPoster || isReview) && (
             <SubmissionsList
               bountyId={id}
@@ -283,37 +266,36 @@ export default function BountyDetailPage() {
         <div className="flex flex-col gap-4">
 
           {/* Prize card */}
-          <div className="bg-ocean-900 rounded-2xl p-5 text-center">
-            <p className="text-[10px] text-white/40 font-mono uppercase tracking-widest mb-1.5">Total reward</p>
+          <div className="bg-koral-700 rounded-2xl p-5 text-center">
+            <p className="text-[10px] text-koral-200/50 font-mono uppercase tracking-widest mb-1.5">Total reward</p>
             <p className="font-mono text-[40px] font-bold text-white leading-none mb-0.5">{bounty.prizePool.toLocaleString()}</p>
-            <p className="font-mono text-[14px] font-bold text-coral mb-5">SUI</p>
+            <p className="font-mono text-[14px] font-bold text-koral-300 mb-5">SUI</p>
             {renderSubmitArea()}
           </div>
 
           {/* Stats */}
-          <div className="bg-white rounded-xl p-4 border border-ocean-100">
+          <div className="bg-white rounded-xl p-4 border border-koral-100">
             {[
               { lbl: "Submissions", val: bounty.submissionCount.toString() },
               { lbl: "Judges", val: (bounty.judgeCount + 1).toString() },
               { lbl: "Poster weight", val: `${Math.round(bounty.posterWeightBps / 100)}%` },
               { lbl: "Type", val: TYPE_LABELS[bounty.bountyType] },
             ].map((s, i) => (
-              <div key={i} className={`flex justify-between items-center py-2 ${i < 3 ? "border-b border-ocean-50" : ""}`}>
-                <span className="text-[12px] text-ocean-600">{s.lbl}</span>
-                <span className="text-[13px] font-bold text-ocean-900 font-mono">{s.val}</span>
+              <div key={i} className={`flex justify-between items-center py-2 ${i < 3 ? "border-b border-koral-50" : ""}`}>
+                <span className="text-[12px] text-koral-500">{s.lbl}</span>
+                <span className="text-[13px] font-bold text-koral-900 font-mono">{s.val}</span>
               </div>
             ))}
           </div>
 
-          {/* Apply to judge */}
           {renderJudgeApply()}
 
           {/* Poster: approve judges */}
           {isPoster && isOpen && (
-            <div className="bg-white rounded-xl p-4 border border-ocean-100 flex flex-col gap-3">
-              <p className="text-[11px] font-bold text-ocean-600 uppercase tracking-wider">Approve a judge</p>
+            <div className="bg-white rounded-xl p-4 border border-koral-100 flex flex-col gap-3">
+              <p className="text-[11px] font-bold text-koral-500 uppercase tracking-wider">Approve a judge</p>
               <input
-                className="text-[11px] px-3 py-2 border border-ocean-100 rounded-lg bg-ocean-50 text-ocean-900 font-mono outline-none focus:border-coral transition-colors"
+                className="text-[11px] px-3 py-2 border border-koral-100 rounded-lg bg-koral-50 text-koral-900 font-mono outline-none focus:border-koral-500 transition-colors"
                 placeholder="0x… wallet address"
                 value={judgeToApprove}
                 onChange={e => setJudgeToApprove(e.target.value)}
@@ -321,7 +303,7 @@ export default function BountyDetailPage() {
               <button
                 onClick={() => run(() => approveJudge(id, judgeToApprove), "Judge approved!")}
                 disabled={loading || !judgeToApprove}
-                className="py-2 bg-ocean-900 text-white font-bold text-[12px] rounded-lg border-none cursor-pointer font-sans disabled:opacity-40"
+                className="py-2 bg-koral-700 text-white font-bold text-[12px] rounded-lg border-none cursor-pointer font-syne disabled:opacity-40 hover:bg-koral-600 transition-colors"
               >
                 Approve →
               </button>
@@ -333,7 +315,7 @@ export default function BountyDetailPage() {
             <button
               onClick={() => run(() => startReview(id), "Review phase started!")}
               disabled={loading}
-              className="w-full py-2.5 bg-purple-600 text-white font-bold text-[13px] rounded-xl border-none cursor-pointer font-sans disabled:opacity-50"
+              className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[13px] rounded-xl border-none cursor-pointer font-syne disabled:opacity-50 transition-colors"
             >
               Start review phase →
             </button>
@@ -341,23 +323,25 @@ export default function BountyDetailPage() {
 
           {/* Voting */}
           {isReview && account && (
-            <div className="bg-white rounded-xl p-4 border border-ocean-100 flex flex-col gap-3">
-              <p className="text-[11px] font-bold text-ocean-600 uppercase tracking-wider">Cast your vote</p>
+            <div className="bg-white rounded-xl p-4 border border-koral-100 flex flex-col gap-3">
+              <p className="text-[11px] font-bold text-koral-500 uppercase tracking-wider">Cast your vote</p>
               <input
-                className="text-[11px] px-3 py-2 border border-ocean-100 rounded-lg bg-ocean-50 text-ocean-900 font-mono outline-none focus:border-coral"
+                className="text-[11px] px-3 py-2 border border-koral-100 rounded-lg bg-koral-50 text-koral-900 font-mono outline-none focus:border-koral-500 transition-colors"
                 placeholder="Submission ID (0x…)"
                 value={selectedSubmission}
                 onChange={e => setSelectedSubmission(e.target.value)}
               />
               <div className="flex items-center gap-3">
-                <span className="text-[11px] text-ocean-600">Score</span>
-                <input type="range" min={1} max={100} value={score} onChange={e => setScore(Number(e.target.value))} className="flex-1" />
-                <span className="text-[13px] font-bold text-ocean-900 font-mono w-7">{score}</span>
+                <span className="text-[11px] text-koral-500">Score</span>
+                <input type="range" min={1} max={100} value={score}
+                  onChange={e => setScore(Number(e.target.value))}
+                  className="flex-1 accent-koral-600" />
+                <span className="text-[13px] font-bold text-koral-900 font-mono w-7">{score}</span>
               </div>
               <button
                 onClick={() => run(() => commitVote(id, selectedSubmission, score), "Vote committed!")}
                 disabled={loading || !selectedSubmission}
-                className="py-2 bg-ocean-900 text-white font-bold text-[12px] rounded-lg border-none cursor-pointer font-sans disabled:opacity-40"
+                className="py-2 bg-koral-700 hover:bg-koral-600 text-white font-bold text-[12px] rounded-lg border-none cursor-pointer font-syne disabled:opacity-40 transition-colors"
               >
                 Commit vote →
               </button>
@@ -368,7 +352,7 @@ export default function BountyDetailPage() {
                   run(() => revealVote(id, selectedSubmission, score, nonce), "Vote revealed!");
                 }}
                 disabled={loading || !selectedSubmission}
-                className="py-2 bg-ocean-100 text-ocean-800 font-bold text-[12px] rounded-lg border-none cursor-pointer font-sans disabled:opacity-40"
+                className="py-2 bg-koral-50 text-koral-700 font-bold text-[12px] rounded-lg border-none cursor-pointer font-syne disabled:opacity-40 hover:bg-koral-100 transition-colors"
               >
                 Reveal vote →
               </button>
@@ -380,14 +364,16 @@ export default function BountyDetailPage() {
             <button
               onClick={() => run(() => finalize(id), "Bounty finalized! Winner paid.")}
               disabled={loading}
-              className="w-full py-2.5 bg-teal text-white font-bold text-[13px] rounded-xl border-none cursor-pointer font-sans disabled:opacity-50"
+              className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold text-[13px] rounded-xl border-none cursor-pointer font-syne disabled:opacity-50 transition-colors"
             >
               Finalize & pay winner →
             </button>
           )}
 
           {msg && (
-            <div className={`px-4 py-3 rounded-xl text-[12px] font-medium ${msgType === "success" ? "bg-teal-light text-teal" : "bg-red-50 text-red-600"}`}>
+            <div className={`px-4 py-3 rounded-xl text-[12px] font-medium ${
+              msgType === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
+            }`}>
               {msg}
             </div>
           )}
@@ -413,8 +399,8 @@ export default function BountyDetailPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl p-5 border border-ocean-100">
-      <h2 className="font-sans font-bold text-[14px] text-ocean-900 mb-4 pb-3 border-b border-ocean-50">{title}</h2>
+    <div className="bg-white rounded-xl p-5 border border-koral-100">
+      <h2 className="font-syne font-bold text-[14px] text-koral-900 mb-4 pb-3 border-b border-koral-50">{title}</h2>
       {children}
     </div>
   );
