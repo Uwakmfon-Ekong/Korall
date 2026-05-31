@@ -4,10 +4,10 @@ import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-ki
 import { Transaction } from "@mysten/sui/transactions";
 import {
   PACKAGE_ID, MODULE, TREASURY_ID,
-  suiToMist, BOUNTY_TYPE,
+  suiToMist,
 } from "@/lib/constants";
 import {
-  buildCommitHash, generateNonce, saveNonce, bytesToHex,
+  buildCommitHash, generateNonce, saveNonce,
 } from "@/lib/voting";
 
 /** Create a new bounty and lock SUI into it */
@@ -35,8 +35,8 @@ export function useCreateBounty() {
     tx.moveCall({
       target: `${PACKAGE_ID}::${MODULE}::create_bounty`,
       arguments: [
-        tx.pure.vector("u8", Array.from(new TextEncoder().encode(params.title))),
-        tx.pure.vector("u8", Array.from(new TextEncoder().encode(params.walrusBlobId))),
+        tx.pure.string(params.title),
+        tx.pure.string(params.walrusBlobId),
         tx.pure.u8(params.bountyType),
         tx.pure.u64(params.posterWeightBps),
         tx.pure.u64(params.maxJudges),
@@ -63,7 +63,7 @@ export function useSubmitWork() {
       target: `${PACKAGE_ID}::${MODULE}::submit_work`,
       arguments: [
         tx.object(bountyId),
-        tx.pure.vector("u8", Array.from(new TextEncoder().encode(walrusBlobId))),
+        tx.pure.string(walrusBlobId),
         tx.object(clockId), // Sui clock object: 0x6
       ],
     });
@@ -140,7 +140,8 @@ export function useCommitVote() {
       target: `${PACKAGE_ID}::${MODULE}::commit_vote`,
       arguments: [
         tx.object(bountyId),
-        tx.pure.vector("u8", Array.from(commitHash)),
+        tx.pure.bytes(commitHash),
+  
       ],
     });
 
@@ -161,11 +162,8 @@ export function useRevealVote() {
     score: number,
     nonce: Uint8Array
   ) => {
-    // Parse submission ID to bytes
-    const idBytes = Array.from(
-      Buffer.from(submissionId.replace("0x", ""), "hex")
-    );
 
+    
     const tx = new Transaction();
     tx.moveCall({
       target: `${PACKAGE_ID}::${MODULE}::reveal_vote`,
@@ -173,7 +171,8 @@ export function useRevealVote() {
         tx.object(bountyId),
         tx.pure.id(submissionId),
         tx.pure.u8(score),
-        tx.pure.vector("u8", Array.from(nonce)),
+        tx.pure.bytes(nonce),
+      
       ],
     });
 
