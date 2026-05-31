@@ -1,0 +1,4 @@
+{
+  "/page": "app/page.js",
+  "/bounty/[id]/page": "app/bounty/[id]/page.js"
+}

@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-ocean-50 text-ocean-900 font-sans antialiased;
+}
+
+/* Sui wallet button override */
+.wkit-button {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 12px !important;
+  background: #042C53 !important;
+  color: white !important;
+  border-radius: 6px !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+}
+
+/* Focus ring */
+input:focus, textarea:focus, select:focus {
+  @apply outline-none ring-0;
+}
