@@ -24,7 +24,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <img src="/koral-logo.png" alt="Koral" className=" w-20 w-auto" />
+          <img src="/koral-logo.png" alt="Koral" className=" lg:w-20 w-14 " />
         </Link>
 
         {/* Desktop nav */}

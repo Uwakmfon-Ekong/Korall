@@ -1,7 +1,9 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/bounties/page": "app/bounties/page.js",
   "/my-bounties/page": "app/my-bounties/page.js",
   "/create/page": "app/create/page.js",
-  "/bounties/page": "app/bounties/page.js",
-  "/judge/page": "app/judge/page.js",
-  "/bounty/[id]/page": "app/bounty/[id]/page.js"
+  "/bounty/[id]/page": "app/bounty/[id]/page.js",
+  "/page": "app/page.js",
+  "/judge/page": "app/judge/page.js"
 }
